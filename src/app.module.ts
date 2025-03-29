@@ -1,8 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { BrandsController } from './modules/brands/controllers/brands.controller';
-import { CarsController } from './modules/cars/controllers/cars.controller';
 import { CarsModule } from './modules/cars/cars.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,7 +7,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     CarsModule,
     ConfigModule.forRoot(),
-
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -23,7 +18,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       synchronize: true,
     }),
   ],
-  controllers: [AppController, BrandsController, CarsController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
-export class AppModule {}
+export class AppModule { }

@@ -14,12 +14,15 @@ export class Car {
   @Column({ type: 'varchar', length: 100 })
   description: string;
 
-  @Column({ type: 'int4', nullable: false })
+  @Column({ type: 'int4' })
   year: number;
 
-  @Column({ type: 'int4' })
-  price: number; // a que hace referencia el versionado
+  @Column({ type: 'int', default: 0 })
+  stock: number;
+
+  @Column({ type: 'numeric' })
+  price: number;
 
   @Column({ type: 'bool', default: true })
-  isAvailable: boolean; // investigar los tipos de datos con los que trabaja postgresql en typeorm
+  isAvailable: boolean;
 }

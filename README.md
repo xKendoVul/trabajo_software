@@ -27,6 +27,13 @@
 
 ## Project setup
 
+1. clonar proyecto
+2. `npm install`
+3. clonar el archivo `.env.template`  y renombrarla como `.env`
+4. cambiar las variables de entorno
+5. crear la base de datos
+6. levantar el api: ``npm run start:dev``
+
 ```bash
 $ npm install
 ```
