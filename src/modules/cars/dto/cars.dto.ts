@@ -54,4 +54,4 @@ export class CreateCarDto {
   isAvailable?: boolean;
 }
 
-export class UpdateCarDto extends PartialType(CreateCarDto) { }
+export class UpdateCarDto extends PartialType(CreateCarDto) {}

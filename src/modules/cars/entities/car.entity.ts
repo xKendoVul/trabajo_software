@@ -17,10 +17,10 @@ export class Car {
   @Column({ type: 'int4' })
   year: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int4', default: 0 })
   stock: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'float', default: 0 })
   price: number;
 
   @Column({ type: 'bool', default: true })
