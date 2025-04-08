@@ -49,7 +49,9 @@ export class CarsService {
   async remove(id: number) {
     const car = await this.findOne(id);
     await this.carRepository.remove(car);
-    // agregar mensaje a la hora de hacer una eliminacion
+    return {
+      message: `Carro ${car.brand} ${car.model} eliminado correctamente`,
+    };
   }
 
   private handleDBException(error: any) {
