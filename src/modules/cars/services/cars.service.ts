@@ -7,9 +7,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCarDto } from '../dto/cars.dto';
+import { UpdateCarDto } from '../dto/cars.dto';
 import { Repository } from 'typeorm';
 import { Car } from '../entities/car.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { declare } from '../../../../dist/app.module';
 
 @Injectable()
 export class CarsService {
@@ -20,8 +23,12 @@ export class CarsService {
     private readonly carRepository: Repository<Car>,
   ) {}
 
-  findAll() {
-    return this.carRepository.find({});
+  findAll(pagintionDto: PaginationDto) {
+    const { limit = 3, offset = 0 } = pagintionDto;
+    return this.carRepository.find({
+      take: limit,
+      skip: offset,
+    });
   }
 
   async create(createCarDto: CreateCarDto) {
@@ -46,11 +53,42 @@ export class CarsService {
     return car;
   }
 
+  async update(id: number, updateCarDto: UpdateCarDto) {
+    const car = await this.carRepository.findOne({ where: { id } });
+    if (!car) {
+      throw new NotFoundException(`Carro con id ${id} no encontrado`);
+    }
+    try {
+      this.carRepository.merge(car, updateCarDto);
+      await this.carRepository.save(car);
+
+      return {
+        message: `Registro actualizado con exito`,
+        data: car,
+      };
+    } catch (error) {
+      this.handleDBException(error);
+    }
+  }
+
+  // async remove(id: number) {
+  //   const car = await this.findOne(id);
+  //   await this.carRepository.remove(car);
+  //   return {
+  //     message: `Carro ${car.brand} ${car.model} eliminado correctamente`,
+  //   };
+  // }
+
   async remove(id: number) {
-    const car = await this.findOne(id);
-    await this.carRepository.remove(car);
+    const exists = await this.carRepository.existsBy({ id });
+    if (!exists) {
+      throw new NotFoundException(`Carro con id ${id} no encontrado`);
+    }
+    await this.carRepository.softDelete(id);
+
     return {
-      message: `Carro ${car.brand} ${car.model} eliminado correctamente`,
+      message: `Auto con ID ${id} eliminado correctamente`,
+      deletedAt: new Date(),
     };
   }
 
