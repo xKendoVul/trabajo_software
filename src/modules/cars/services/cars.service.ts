@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   Injectable,
@@ -6,13 +5,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCarDto } from '../dto/cars.dto';
-import { UpdateCarDto } from '../dto/cars.dto';
-import { Repository } from 'typeorm';
-import { Car } from '../entities/car.entity';
+import { CreateCarDto, FilterCarDto, UpdateCarDto } from '../dto/car.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { declare } from '../../../../dist/app.module';
+import { Car } from '../entities/car.entity';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { Brand } from '../../brands/entities/brand.entity';
 
 @Injectable()
 export class CarsService {
@@ -21,13 +18,34 @@ export class CarsService {
   constructor(
     @InjectRepository(Car)
     private readonly carRepository: Repository<Car>,
+    @InjectRepository(Brand)
+    private readonly brandRepository: Repository<Brand>,
   ) {}
 
-  findAll(pagintionDto: PaginationDto) {
-    const { limit = 3, offset = 0 } = pagintionDto;
+  // findAll(paginationDto: PaginationDto) {
+  //   const { limit = 3, offset = 0 } = paginationDto;
+  //   return this.carRepository.find({
+  //     take: limit,
+  //     skip: offset,
+  //   });
+  // }
+
+  findAll(params?: FilterCarDto) {
+    const { limit, offset, description } = params || {};
+    const where: FindOptionsWhere<Car> = {};
+
+    if (description) {
+      where.description = ILike(`%${description}%`);
+    }
+
     return this.carRepository.find({
+      order: { id: 'ASC' },
+      where,
       take: limit,
       skip: offset,
+      relations: {
+        brand: true,
+      },
     });
   }
 
@@ -38,13 +56,17 @@ export class CarsService {
       return car;
     } catch (error) {
       // console.log(error);
-      // throw new InternalServerErrorException('ayuda!');
+      // throw new InternalServerErrorException('Ayuda!');
       this.handleDBException(error);
     }
   }
 
   async findOne(id: number) {
-    const car = await this.carRepository.findOneBy({ id });
+    const car = await this.carRepository.findOne({
+      where: { id: id },
+      relations: { brand: true },
+    });
+
     if (!car) {
       throw new NotFoundException(
         `Carro con id ${id} no encontrado en la base de datos`,
@@ -53,30 +75,40 @@ export class CarsService {
     return car;
   }
 
-  async update(id: number, updateCarDto: UpdateCarDto) {
-    const car = await this.carRepository.findOne({ where: { id } });
-    if (!car) {
-      throw new NotFoundException(`Carro con id ${id} no encontrado`);
-    }
-    try {
-      this.carRepository.merge(car, updateCarDto);
-      await this.carRepository.save(car);
+  async update(id: number, changes: UpdateCarDto) {
+    const car = await this.carRepository.findOne({
+      where: { id },
+      relations: { brand: true },
+    });
 
-      return {
-        message: `Registro actualizado con exito`,
-        data: car,
-      };
-    } catch (error) {
-      this.handleDBException(error);
+    if (!car) {
+      throw new NotFoundException(`Car with id ${id} not found`);
     }
+
+    if (changes.brand_id) {
+      const brand = await this.brandRepository.findOneBy({
+        id: changes.brand_id,
+      });
+      if (!brand) {
+        throw new NotFoundException(
+          `Brand with id ${changes.brand_id} not found`,
+        );
+      }
+      car.brand = brand;
+    }
+
+    this.carRepository.merge(car, changes);
+    const updated = await this.carRepository.save(car);
+
+    return {
+      message: 'Registro actualizado correctamente',
+      data: updated,
+    };
   }
 
   // async remove(id: number) {
   //   const car = await this.findOne(id);
   //   await this.carRepository.remove(car);
-  //   return {
-  //     message: `Carro ${car.brand} ${car.model} eliminado correctamente`,
-  //   };
   // }
 
   async remove(id: number) {
@@ -85,11 +117,19 @@ export class CarsService {
       throw new NotFoundException(`Carro con id ${id} no encontrado`);
     }
     await this.carRepository.softDelete(id);
-
     return {
-      message: `Auto con ID ${id} eliminado correctamente`,
+      message: `Auto con ID ${id} eliminado con éxito`,
       deletedAt: new Date(),
     };
+  }
+
+  async deleteAllCars() {
+    const query = this.carRepository.createQueryBuilder('car');
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      this.handleDBException(error);
+    }
   }
 
   private handleDBException(error: any) {
