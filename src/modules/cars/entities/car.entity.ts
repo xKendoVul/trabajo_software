@@ -36,7 +36,9 @@ export class Car {
   @Column({ type: 'bool', default: true })
   isAvailable: boolean;
 
-  @ManyToOne(() => Brand)
+  @ManyToOne(() => Brand, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'brand_id', referencedColumnName: 'id' })
   brand: Brand;
 

@@ -1,3 +1,11 @@
+interface seedBrand {
+  name: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deleteAt?: Date;
+}
+
 interface seedCar {
   model: string;
   year: number;
@@ -13,9 +21,40 @@ interface seedCar {
 
 interface seedData {
   cars: seedCar[];
+  brands: seedBrand[];
 }
 
 export const initialData: seedData = {
+  brands: [
+    {
+      name: 'Tesla',
+      description:
+        'Tesla, Inc. is an American electric vehicle and clean energy company.',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      name: 'Ford',
+      description: 'Ford Motor Company is an American multinational automaker.',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      name: 'Volkswagen',
+      description:
+        'Volkswagen AG is a German automaker headquartered in Wolfsburg.',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      name: 'Rivian',
+      description:
+        'Rivian Automotive, Inc. is an American electric vehicle manufacturer.',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ],
+
   cars: [
     {
       model: 'Model S Plaid',
